@@ -7,7 +7,7 @@ class ThermalState:
         self.T_ambient = Ta #outdoor
         self.T_heater = Th
         self.T_envelope = Te
-        self.P_heating = None
+        self.P_heater = None
         self.T_set = Ts
         self.reward = None
         self.comfort = None

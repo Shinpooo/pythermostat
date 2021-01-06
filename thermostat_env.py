@@ -7,6 +7,8 @@ from database import Database
 from thermal_state import ThermalState
 from thermal_model import ThermalModel
 import json
+import os
+from plotter import Plotter
 
 
 class ThermostatEnv(gym.Env):
@@ -22,9 +24,9 @@ class ThermostatEnv(gym.Env):
     self.end_date = end_date
     self.date_range = pd.date_range(start=start_date, end=end_date,freq=str(self.time_step)+"H") 
     #Action: P_h
-    #self.action_space = spaces.Discrete(150)
+    self.action_space = spaces.Discrete(150)
     # TODO Normalize action space [-1,1] for continuous action
-    self.action_space = spaces.Box(low=-1, high=1, dtype=np.float64)
+    # self.action_space = spaces.Box(low=-1, high=1, dtype=np.float64)
     # Example for using image as input:
     #State : [T_a, T_e, T_h, T_i, Ts]
     self.observation_space = spaces.Box(low=np.array([0, 0, 0, 10, 16]), high=np.array([40, 30, 100, 25, 25]), dtype=np.float64)
@@ -40,8 +42,8 @@ class ThermostatEnv(gym.Env):
     Th = self.thermal_states[-1].T_heater
     Ti = self.thermal_states[-1].T_indoor
     Ts = self.thermal_states[-1].T_set
-    
-    Ph = (action + 1)*75
+    Ph = action
+    #Ph = (action + 1)*75
     dTi, dTe, dTh = self.thermal_model.step(Ta, Te, Th, Ti, Ph, self.time_step)
     Ti = Ti + dTi 
     Te = Te + dTe 
@@ -52,7 +54,7 @@ class ThermostatEnv(gym.Env):
     Ta = self.database.get_columns("Ta", self.date_range[self.env_step])
     #Ts = np.random.uniform(16,22)
     Ts = self.database.get_columns("Ts", self.date_range[self.env_step])
-    self.thermal_states[-1].Ph = Ph
+    self.thermal_states[-1].P_heater = Ph
     self.thermal_states[-1].reward = reward
     done = False
     if self.env_step == len(self.date_range) - 1:
@@ -83,3 +85,19 @@ class ThermostatEnv(gym.Env):
     self.Te0 = self.thermal_model.Te0
 #   def close (self):
 #     ...
+  def store_and_plot(self, result_folder):
+    results = dict(
+      dates = ["%s" % tstate.date_time for tstate in self.thermal_states],
+      T_indoor = [tstate.T_indoor for tstate in self.thermal_states],
+      T_ambient = [tstate.T_ambient for tstate in self.thermal_states],
+      T_envelope = [tstate.T_envelope for tstate in self.thermal_states],
+      T_heater = [tstate.T_heater for tstate in self.thermal_states],
+      T_set = [tstate.T_set for tstate in self.thermal_states],
+      P_heater = [float(tstate.P_heater) for tstate in self.thermal_states[:-1]]
+    )
+    if not os.path.isdir(result_folder):
+      os.makedirs(result_folder)
+    with open(result_folder + "/results.json", 'w') as jsonFile:
+      json.dump(results, jsonFile)
+    plotter = Plotter(results)
+    plotter.plot_results()

@@ -27,9 +27,9 @@ class Database:
         """
         df = pd.read_csv(path, sep=";|,", parse_dates=True, index_col='DateTime', engine='python')
         import numpy as np
-        df['Ts'] = np.random.uniform(20, 21, df.shape[0])
+        #df['Ts'] = np.random.uniform(20, 21, df.shape[0])
         df_col_names = list(df.columns.values)
-
+        df['Ts'] = 24.0
         df['Year'] = df.index.map(lambda x: x.year)
         df['Month'] = df.index.map(lambda x: x.month)
         df['Day'] = df.index.map(lambda x: x.day)
@@ -38,6 +38,12 @@ class Database:
         df['Seconds'] = df.index.map(lambda x: x.second)
         df['IsoDayOfWeek'] = df.index.map(lambda x: x.isoweekday())
         df['IsoWeekNumber'] = df.index.map(lambda x: x.isocalendar()[1])
+        
+        for h in range(7):
+            df.loc[df.Hour == h, 'Ts'] = 17.0
+        for h in range(8, 17):
+            df.loc[df.Hour == h, 'Ts'] = 15.0
+        print(df)
         return df
 
     def get_columns(self, column_indexer, time_indexer):
