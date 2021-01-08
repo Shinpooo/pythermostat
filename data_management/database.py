@@ -39,11 +39,10 @@ class Database:
         df['IsoDayOfWeek'] = df.index.map(lambda x: x.isoweekday())
         df['IsoWeekNumber'] = df.index.map(lambda x: x.isocalendar()[1])
         
-        for h in range(7):
+        for h in range(15):
             df.loc[df.Hour == h, 'Ts'] = 17.0
-        for h in range(8, 17):
-            df.loc[df.Hour == h, 'Ts'] = 15.0
-        print(df)
+        # for h in range(8, 17):
+        #     df.loc[df.Hour == h, 'Ts'] = 15.0
         return df
 
     def get_columns(self, column_indexer, time_indexer):

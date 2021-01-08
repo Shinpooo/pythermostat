@@ -3,12 +3,12 @@ from gym import spaces
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from database import Database
-from thermal_state import ThermalState
-from thermal_model import ThermalModel
+from data_management.database import Database
+from simulation.thermal_state import ThermalState
+from models.thermal_model import ThermalModel
 import json
 import os
-from plotter import Plotter
+from plot.plotter import Plotter
 
 
 class ThermostatEnv(gym.Env):
@@ -28,12 +28,11 @@ class ThermostatEnv(gym.Env):
     # TODO Normalize action space [-1,1] for continuous action
     # self.action_space = spaces.Box(low=-1, high=1, dtype=np.float64)
     # Example for using image as input:
-    #State : [T_a, T_e, T_h, T_i, Ts]
-    self.observation_space = spaces.Box(low=np.array([0, 0, 0, 10, 16]), high=np.array([40, 30, 100, 25, 25]), dtype=np.float64)
+    #State : [T_a, T_e, T_h, T_i, Ts, H]
+    self.observation_space = spaces.Box(low=np.array([0, 0, 0, 10, 16, 0]), high=np.array([40, 30, 100, 25, 25, 23]), dtype=np.float64)
     self.thermal_states = []
     self.get_init_condtions()
     
-    self.episode = 0
 
 
   def step(self, action):
@@ -46,36 +45,38 @@ class ThermostatEnv(gym.Env):
     #Ph = (action + 1)*75
     dTi, dTe, dTh = self.thermal_model.step(Ta, Te, Th, Ti, Ph, self.time_step)
     Ti = Ti + dTi 
+    #print(Ts)
     Te = Te + dTe 
     Th = Th + dTh
-    reward = -abs(Ti - Ts)
+    reward = -(Ti - Ts)**2
      
     self.env_step += 1
     Ta = self.database.get_columns("Ta", self.date_range[self.env_step])
     #Ts = np.random.uniform(16,22)
     Ts = self.database.get_columns("Ts", self.date_range[self.env_step])
+    hour_of_day = self.database.get_columns("Hour", self.date_range[self.env_step])
+    
     self.thermal_states[-1].P_heater = Ph
     self.thermal_states[-1].reward = reward
+    # print(self.thermal_states[-1].T_indoor)
+    # print(self.thermal_states[-1].P_heater)
     done = False
     if self.env_step == len(self.date_range) - 1:
         done = True
     p_dt = self.date_range[self.env_step]
-
-    self.thermal_states.append(ThermalState(date_time=self.date_range[self.env_step], Ta=Ta, Te=Te, Th=Th, Ti=Ti, Ts=Ts))
+    self.thermal_states.append(ThermalState(date_time=self.date_range[self.env_step], Ta=Ta, Te=Te, Th=Th, Ti=Ti, Ts=Ts, hour=hour_of_day))
     next_state = self.thermal_states[-1].get_RL_state()
     return next_state, reward, done, {}
 
   def reset(self):
-    self.episode += 1
     self.env_step = 0
-    self.thermal_states = [ThermalState(date_time=self.date_range[self.env_step], Ta=self.Ta0, Te=self.Te0, Th=self.Th0, Ti=self.Ti0, Ts=self.Ts0)]
+    hour_of_day = self.database.get_columns("Hour", self.start_date)
+    self.thermal_states = [ThermalState(date_time=self.date_range[self.env_step], Ta=self.Ta0, Te=self.Te0, Th=self.Th0, Ti=self.Ti0, Ts=self.Ts0, hour=hour_of_day)]
     state = self.thermal_states[-1].get_RL_state()
     return state 
 
   def render(self):
-    plt.plot(self.date_range[1:], [tstate.T_indoor for tstate in self.thermal_states[1:]], label="T_indoor")
-    plt.plot(self.date_range[1:], [tstate.T_set for tstate in self.thermal_states[:-1]], label="T_set")
-    plt.show()
+    pass
     
   def get_init_condtions(self):
     self.Ta0 = self.database.get_columns("Ta", self.start_date)
@@ -83,8 +84,8 @@ class ThermostatEnv(gym.Env):
     self.Ti0 = self.database.get_columns("Ti", self.start_date)
     self.Ts0 = self.database.get_columns("Ts", self.start_date)
     self.Te0 = self.thermal_model.Te0
-#   def close (self):
-#     ...
+
+
   def store_and_plot(self, result_folder):
     results = dict(
       dates = ["%s" % tstate.date_time for tstate in self.thermal_states],
@@ -99,5 +100,5 @@ class ThermostatEnv(gym.Env):
       os.makedirs(result_folder)
     with open(result_folder + "/results.json", 'w') as jsonFile:
       json.dump(results, jsonFile)
-    plotter = Plotter(results)
+    plotter = Plotter(results, result_folder)
     plotter.plot_results()

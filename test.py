@@ -41,8 +41,8 @@ for i in range(1, num_rec):
     Te[i] = Te[i-1] + dTe 
     Th[i] = Th[i-1] + dTh
 
-# plt.plot(Ti, label="Timodeled")
-# plt.plot(Ti_mes, label="Timeasured")
-plt.plot(Th, label="Thmodeled")
-plt.plot(Th_mes, label="Thmeasured")
+plt.plot(Ti, label="Timodeled")
+plt.plot(Ti_mes, label="Timeasured")
+# plt.plot(Th, label="Thmodeled")
+# plt.plot(Th_mes, label="Thmeasured")
 plt.show()

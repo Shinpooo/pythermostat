@@ -13,12 +13,13 @@ FONT_SIZE = 12
 
 
 class Plotter:
-    def __init__(self, results, savefigs=True):
+    def __init__(self, results, result_folder, savefigs=True):
         """
         :param results: A json type dictionary containing results
         :param case: Name of the case, as a string
         """
         self.results = results
+        self.result_folder = result_folder
         self.savefigs = savefigs
         self.dates = [datetime.strptime(d, "%Y-%m-%d %H:%M:%S") for d in results["dates"]]
 
@@ -121,7 +122,7 @@ class Plotter:
 
         fig.autofmt_xdate()
         if self.savefigs:
-            fig.savefig('results.pdf')
+            fig.savefig(self.result_folder + '/results.pdf')
             # ax1.set_xticklabels(list(range(len(T_indoor))))
             # ax2.set_xticklabels(list(range(len(T_indoor))))
 
