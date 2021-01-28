@@ -10,12 +10,10 @@ class Database:
         The CSV file values are separated by ';' and the first line must contain series names.
         It must contain
         * a 'DateTime' column with values interpretable as python date time objects.
-        * a 'Price' column with values interpretable as floats.
-        * All the non-flexible quantities (load and generation) described in the microgridRLsimulator configuration
+        * All other values (temperatures).
         Some new columns are generated from the DateTime column to indicate e.g. whether
         a datetime corresponds to a day of the week or not.
         :param path_to_csv: Path to csv containing realized data
-        :param grid: A Grid object describing the configuration of the microgridRLsimulator
         """
         self.data_frame = self.read_data(path_to_csv)
 
@@ -29,7 +27,7 @@ class Database:
         import numpy as np
         #df['Ts'] = np.random.uniform(20, 21, df.shape[0])
         df_col_names = list(df.columns.values)
-        df['Ts'] = 24.0
+        df['Ts'] = 23.0
         df['Year'] = df.index.map(lambda x: x.year)
         df['Month'] = df.index.map(lambda x: x.month)
         df['Day'] = df.index.map(lambda x: x.day)
@@ -40,7 +38,7 @@ class Database:
         df['IsoWeekNumber'] = df.index.map(lambda x: x.isocalendar()[1])
         
         for h in range(15):
-            df.loc[df.Hour == h, 'Ts'] = 17.0
+            df.loc[df.Hour == h, 'Ts'] = 18.0
         # for h in range(8, 17):
         #     df.loc[df.Hour == h, 'Ts'] = 15.0
         return df

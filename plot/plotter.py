@@ -95,7 +95,7 @@ class Plotter:
         ax1 = plt.subplot(4, 1, 1)
         ax1.set_ylabel('°C', fontsize=FONT_SIZE)
         ax1.plot(T_indoor, label="T_indoor")
-        ax1.plot(T_set, label="T_set", drawstyle="steps-post")
+        ax1.plot([18]+T_set[:-1], label="T_set", drawstyle="steps-post")
         ax1.set_xticks(xticks)
         ax1.set_xticklabels(xticks_labels)
         ax1.legend(fontsize=FONT_SIZE)
@@ -108,17 +108,19 @@ class Plotter:
         ax2.legend(fontsize=FONT_SIZE)
         # ax2.axhline(y=0, color='k', lw=0.5)
 
-        ax3 = plt.subplot(4, 1, 3, sharex=ax1)
+
+
+        ax4 = plt.subplot(4, 1, 3, sharex=ax1)
+        ax4.set_ylabel('W', fontsize=FONT_SIZE)
+        ax4.plot(P_heater, label="P_heater",drawstyle="steps-post")
+        #ax4.set_ylim([min(charge) * 1.1 - 1e-3, max(discharge) * 1.1 + 1e-3])
+        ax4.legend(fontsize=FONT_SIZE)
+
+        ax3 = plt.subplot(4, 1, 4, sharex=ax1)
         ax3.set_ylabel('°C', fontsize=FONT_SIZE)
         ax3.plot(T_heater, label="T_heater")
         #ax3.set_ylim([min(charge) * 1.1 - 1e-3, max(discharge) * 1.1 + 1e-3])
         ax3.legend(fontsize=FONT_SIZE)
-
-        ax4 = plt.subplot(4, 1, 4, sharex=ax1)
-        ax4.set_ylabel('kW', fontsize=FONT_SIZE)
-        ax4.plot(P_heater, label="P_heater",drawstyle="steps-post")
-        #ax4.set_ylim([min(charge) * 1.1 - 1e-3, max(discharge) * 1.1 + 1e-3])
-        ax4.legend(fontsize=FONT_SIZE)
 
         fig.autofmt_xdate()
         if self.savefigs:

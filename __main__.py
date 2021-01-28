@@ -2,6 +2,7 @@ from simulation.thermostat_env import ThermostatEnv
 from dateutil.parser import isoparse
 from controllers.opt_controller import OptController
 from controllers.dqn_controller import DqnController
+from controllers.valve_controller import ValveController
 
 
 if  __name__ == "__main__":
