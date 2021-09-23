@@ -27,7 +27,7 @@ class OptController:
     def simulate(self):
         state = self.env.reset()
         cumulative_reward = 0.0
-        P_consumed = 0.0
+        P_consumed = []
         done = False
         #while not done:
         self._create_model()
@@ -40,9 +40,9 @@ class OptController:
             logger.info("simulating for " + str(self.env.thermal_states[-1].date_time))
             next_state, reward, done, info = self.env.step(action=p_opt)  # Run the simulator in continuous mode (low_level_action)
             cumulative_reward += reward
-            P_consumed += p_opt
+            P_consumed.append(p_opt)
         print("MSE Setpoint- realized: %.3f - Energy consumed: %.2f"%
-                  (cumulative_reward, P_consumed))
+                  (cumulative_reward, sum(P_consumed)))
         result_folder = "results/" + self.name() + "/" + self.env.start_date.strftime("%m-%d-%Y") + \
             "_to_" + self.env.end_date.strftime("%m-%d-%Y")
         self.env.store_and_plot(result_folder)

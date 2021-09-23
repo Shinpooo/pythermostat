@@ -32,7 +32,7 @@ class ThermostatEnv(gym.Env):
     self.observation_space = spaces.Box(low=np.array([0, 0, 0, 10, 16, 0]), high=np.array([40, 30, 100, 25, 25, 23]), dtype=np.float64)
     self.thermal_states = []
     self.get_init_condtions()
-    self.P_capacity = 200
+    self.P_capacity = 2000
     
 
 
